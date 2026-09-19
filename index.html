@@ -1,744 +1,499 @@
 <!DOCTYPE html>
-<html lang="en" class="dark scroll-smooth">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AegisGuard // Institutional MultiSig Vault & Security Terminal</title>
-  
-  <!-- Fonts & Core Scripts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>AegisGuard // Threat Defense & MultiSig Command Terminal</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Plus Jakarta Sans', 'sans-serif'],
-            mono: ['Fira Code', 'monospace'],
-          }
-        }
-      }
-    }
-  </script>
-
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* Custom Dark Scrollbar */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #02040a; }
-    ::-webkit-scrollbar-thumb { background: #131b2e; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #1e2a47; }
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,800;1,400&family=Rajdhani:wght@500;600;700;800&display=swap');
 
-    /* Animated Dark Aurora Engine */
-    @keyframes darkDrift1 {
-      0% { transform: translate(0, 0) scale(1) rotate(0deg); }
-      33% { transform: translate(120px, 80px) scale(1.15) rotate(60deg); }
-      66% { transform: translate(-60px, 140px) scale(0.9) rotate(120deg); }
-      100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    :root {
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-display: 'Rajdhani', sans-serif;
     }
 
-    @keyframes darkDrift2 {
-      0% { transform: translate(0, 0) scale(1.1) rotate(0deg); }
-      33% { transform: translate(-100px, -60px) scale(0.95) rotate(-70deg); }
-      66% { transform: translate(80px, 70px) scale(1.2) rotate(-140deg); }
-      100% { transform: translate(0, 0) scale(1.1) rotate(0deg); }
+    body {
+      font-family: var(--font-mono);
+      background-color: #050204;
+      color: #fca5a5;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(220, 38, 38, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(153, 27, 27, 0.18) 0%, transparent 50%),
+        linear-gradient(rgba(10, 2, 4, 0.95), rgba(5, 1, 2, 0.98)),
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(220, 38, 38, 0.03) 2px, rgba(220, 38, 38, 0.03) 4px);
     }
 
-    @keyframes darkDrift3 {
-      0% { transform: translate(0, 0) scale(0.9) rotate(0deg); }
-      50% { transform: translate(-80px, 110px) scale(1.25) rotate(90deg); }
-      100% { transform: translate(0, 0) scale(0.9) rotate(0deg); }
+    .font-display {
+      font-family: var(--font-display);
     }
 
-    @keyframes darkDrift4 {
-      0% { transform: translate(0, 0) scale(1.05) rotate(0deg); }
-      50% { transform: translate(110px, -90px) scale(0.85) rotate(-90deg); }
-      100% { transform: translate(0, 0) scale(1.05) rotate(0deg); }
+    /* Scanline overlay effect */
+    .scanlines {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 6px 100%;
+      z-index: 999;
+      opacity: 0.6;
     }
 
-    .aurora-orb-1 {
-      animation: darkDrift1 18s ease-in-out infinite;
-    }
-    .aurora-orb-2 {
-      animation: darkDrift2 24s ease-in-out infinite;
-    }
-    .aurora-orb-3 {
-      animation: darkDrift3 20s ease-in-out infinite;
-    }
-    .aurora-orb-4 {
-      animation: darkDrift4 22s ease-in-out infinite;
-    }
-
-    /* Translucent Glass Panels */
-    .gemini-glass {
-      background: rgba(8, 12, 22, 0.72);
-      backdrop-filter: blur(24px) saturate(160%);
-      -webkit-backdrop-filter: blur(24px) saturate(160%);
-      border: 1px solid rgba(255, 255, 255, 0.07);
+    /* Red Alert Glows */
+    .crimson-glow {
+      box-shadow: 0 0 25px -5px rgba(220, 38, 38, 0.5), inset 0 0 15px -3px rgba(239, 68, 68, 0.2);
     }
     
-    .gemini-card-hover {
-      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .gemini-card-hover:hover {
-      border-color: rgba(99, 102, 241, 0.35);
-      transform: translateY(-2px);
-      box-shadow: 0 16px 36px -12px rgba(10, 18, 45, 0.6);
+    .crimson-border {
+      border: 1px solid rgba(239, 68, 68, 0.35);
     }
 
-    .gemini-gradient-text {
-      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 35%, #818cf8 70%, #38bdf8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .crimson-border-bright {
+      border: 1px solid rgba(239, 68, 68, 0.8);
+    }
+
+    .pulse-danger {
+      animation: dangerPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes dangerPulse {
+      0%, 100% {
+        border-color: rgba(239, 68, 68, 0.4);
+        box-shadow: 0 0 15px rgba(220, 38, 38, 0.2);
+      }
+      50% {
+        border-color: rgba(239, 68, 68, 0.9);
+        box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+      }
+    }
+
+    /* Custom tactical scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0d0406;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #7f1d1d;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #dc2626;
     }
   </style>
 </head>
+<body class="min-h-screen relative p-4 md:p-8 selection:bg-red-600 selection:text-white">
+  <div class="scanlines"></div>
 
-<body class="bg-[#02040a] text-slate-100 min-h-screen font-sans selection:bg-indigo-500 selection:text-white relative overflow-x-hidden">
-
-  <!-- ================= CONTINUOUS DARK AURORA BACKGROUND ================= -->
-  <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-[#02040a]">
-    <!-- Dark Deep Indigo/Navy (Top-Left) -->
-    <div class="aurora-orb-1 absolute -top-40 -left-20 w-[680px] h-[680px] rounded-full bg-[#0d1738] blur-[130px] opacity-75 mix-blend-screen"></div>
-
-    <!-- Dark Deep Teal/Sapphire (Top-Right) -->
-    <div class="aurora-orb-2 absolute top-1/4 -right-32 w-[620px] h-[620px] rounded-full bg-[#062138] blur-[140px] opacity-65 mix-blend-screen"></div>
-
-    <!-- Dark Obsidian Violet (Center-Left) -->
-    <div class="aurora-orb-3 absolute top-1/2 left-1/5 w-[650px] h-[650px] rounded-full bg-[#180b33] blur-[150px] opacity-70 mix-blend-screen"></div>
-
-    <!-- Dark Muted Plum/Slate (Bottom-Right) -->
-    <div class="aurora-orb-4 absolute -bottom-36 right-1/4 w-[700px] h-[700px] rounded-full bg-[#1c082b] blur-[160px] opacity-60 mix-blend-screen"></div>
-
-    <!-- Subtle Technical Grid Texture -->
-    <div class="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:24px_24px] opacity-40"></div>
-  </div>
-
-  <!-- ================= TOP HEADER ================= -->
-  <header class="sticky top-0 z-50 gemini-glass border-b border-white/[0.08] px-6 py-3.5">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-3.5">
-        <div class="relative w-10 h-10 rounded-xl bg-gradient-to-tr from-[#1a365d] via-[#312e81] to-[#0e7490] p-[1.5px] flex items-center justify-center shadow-lg shadow-indigo-950/40">
-          <div class="w-full h-full bg-[#040817] rounded-[10px] flex items-center justify-center">
-            <svg class="w-5 h-5 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z" fill="url(#gemini-grad)" stroke="none"/>
-              <defs>
-                <linearGradient id="gemini-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-                  <stop stop-color="#38bdf8"/>
-                  <stop offset="0.5" stop-color="#818cf8"/>
-                  <stop offset="1" stop-color="#c084fc"/>
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="font-extrabold tracking-tight text-lg gemini-gradient-text">AEGIS // VAULT</span>
-            <span class="px-2.5 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider rounded-full bg-sky-950/50 text-sky-300 border border-sky-800/40">v2.4 Cancun</span>
-          </div>
-          <p class="text-xs text-slate-400">Institutional M-of-N Governance &amp; Mutex Shield</p>
-        </div>
+  <!-- Top Navigation Bar with Aggressive Security Badge Logo -->
+  <header class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 p-5 rounded-xl bg-black/80 backdrop-blur-md crimson-border crimson-glow mb-8">
+    <div class="flex items-center gap-4">
+      <!-- Tactical Security Badge SVG Logo -->
+      <div class="relative flex items-center justify-center w-14 h-14 bg-gradient-to-br from-red-950 via-red-900 to-black rounded-lg border border-red-500/70 shadow-[0_0_20px_rgba(239,68,68,0.5)]">
+        <svg class="w-8 h-8 text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.9)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Outer Sharp Badge -->
+          <polygon points="12 2 21 5 21 12 12 22 3 12 3 5 12 2"></polygon>
+          <!-- Tactical Core Crosshairs & Eye -->
+          <circle cx="12" cy="11" r="3"></circle>
+          <line x1="12" y1="5" x2="12" y2="7"></line>
+          <line x1="12" y1="15" x2="12" y2="17"></line>
+          <line x1="6" y1="11" x2="8" y2="11"></line>
+          <line x1="16" y1="11" x2="18" y2="11"></line>
+        </svg>
+        <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></span>
+        <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full"></span>
       </div>
 
-      <!-- Navigation -->
-      <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-slate-400">
-        <a href="#metrics" class="hover:text-white transition">Overview</a>
-        <a href="#governance" class="hover:text-white transition">Consensus Desk</a>
-        <a href="#mempool" class="hover:text-white transition">Mempool</a>
-        <a href="#simulator" class="hover:text-rose-400 transition">Exploit Lab</a>
-        <a href="#audit-terminal" class="hover:text-emerald-400 transition">Live Terminal</a>
-      </nav>
-
-      <!-- Web3 Connect -->
-      <div class="flex items-center gap-3">
-        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono">
-          <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
-          </span>
-          <span class="text-slate-300">Remix VM (Osaka)</span>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-display text-2xl md:text-3xl font-extrabold tracking-wider text-red-500 uppercase flex items-center gap-2">
+            AEGISGUARD <span class="text-xs px-2 py-0.5 rounded bg-red-950 border border-red-500 text-red-300">RED ALERT v2.4</span>
+          </h1>
         </div>
-        <button id="connectBtn" class="flex items-center gap-2 bg-gradient-to-r from-indigo-700 to-indigo-900 hover:from-indigo-600 hover:to-indigo-800 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-indigo-950/50 active:scale-95 border border-white/10">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-          <span id="walletText">Connect Signer</span>
-        </button>
+        <p class="text-xs text-red-400/80 tracking-widest uppercase">
+          DEFENSE PERIMETER // 2-OF-3 CONSENSUS // REENTRANCY INTERCEPTOR
+        </p>
       </div>
+    </div>
+
+    <!-- Quick Status Indicators -->
+    <div class="flex items-center gap-4 text-xs font-semibold">
+      <div class="flex items-center gap-2 bg-red-950/60 px-3 py-2 rounded-lg border border-red-700/60">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+        <span class="text-red-300">DEFENSE GRID: <strong class="text-red-400">ARMED</strong></span>
+      </div>
+      <div class="bg-black/90 px-3 py-2 rounded-lg border border-red-900/80 text-zinc-400">
+        NETWORK: <span class="text-red-400">EVM OSAKA</span>
+      </div>
+      <a href="https://github.com/akwins123-afk/multisig-security-vault" target="_blank" class="flex items-center gap-1.5 bg-red-900/40 hover:bg-red-800/60 text-red-200 px-3 py-2 rounded-lg border border-red-600/60 transition">
+        <i data-lucide="github" class="w-4 h-4"></i>
+        <span>GITHUB REPO</span>
+      </a>
     </div>
   </header>
 
-  <!-- ================= MAIN DASHBOARD ================= -->
-  <main class="relative z-10 max-w-7xl mx-auto px-6 py-10 space-y-12">
+  <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    <!-- Section 1: Metrics -->
-    <section id="metrics" class="space-y-4">
-      <div class="flex justify-between items-end">
-        <div>
-          <h2 class="text-xs uppercase font-mono tracking-widest text-sky-400 font-bold flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-            Telemetric Node Status
-          </h2>
-          <p class="text-2xl font-bold tracking-tight text-white mt-1">Multi-Party Treasury Architecture</p>
-        </div>
-        <div class="text-xs text-slate-400 font-mono">Synced Block #18920481</div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- Metric 1: Balance -->
-        <div class="gemini-glass rounded-2xl p-5 gemini-card-hover relative overflow-hidden">
-          <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Total Vault Reserves</span>
-          <div class="flex items-baseline gap-2 mt-2">
-            <span id="vaultBalance" class="text-3xl font-extrabold tracking-tight text-emerald-400 font-mono">3.00</span>
-            <span class="text-xs font-semibold text-emerald-500">ETH</span>
-          </div>
-          <div class="mt-3 flex items-center justify-between text-xs text-slate-500 font-mono">
-            <span id="fiatEquivalent">≈ $9,840.00 USD</span>
-            <span class="text-emerald-400">● 100% Solvent</span>
-          </div>
-        </div>
-
-        <!-- Metric 2: Quorum -->
-        <div class="gemini-glass rounded-2xl p-5 gemini-card-hover relative overflow-hidden">
-          <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Quorum Consensus</span>
-          <div class="flex items-baseline gap-2 mt-2">
-            <span class="text-3xl font-extrabold tracking-tight text-indigo-300 font-mono">2 / 3</span>
-            <span class="text-xs font-semibold text-indigo-400">Keys</span>
-          </div>
-          <div class="mt-3 flex items-center justify-between text-xs text-slate-500 font-mono">
-            <span>Threshold: 66.7%</span>
-            <span class="text-indigo-400">M-of-N Validated</span>
-          </div>
-        </div>
-
-        <!-- Metric 3: Mutex -->
-        <div class="gemini-glass rounded-2xl p-5 gemini-card-hover relative overflow-hidden">
-          <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Security Mutex Flag</span>
-          <div class="flex items-baseline gap-2 mt-2">
-            <span id="mutexStatus" class="text-2xl font-bold tracking-tight text-cyan-300 font-mono">UNLOCKED (1)</span>
-          </div>
-          <div class="mt-3 flex items-center justify-between text-xs text-slate-500 font-mono">
-            <span>Checks-Effects-Int.</span>
-            <span class="text-cyan-400">Mutex Guard Active</span>
-          </div>
-        </div>
-
-        <!-- Metric 4: Circuit Breaker -->
-        <div class="gemini-glass rounded-2xl p-5 gemini-card-hover relative overflow-hidden">
-          <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Circuit Breaker</span>
-          <div class="flex items-baseline gap-2 mt-2">
-            <span id="pauseBadge" class="inline-flex items-center gap-1.5 text-xs font-bold font-mono px-2.5 py-1 rounded-lg bg-emerald-950/40 text-emerald-400 border border-emerald-800/40">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> OPERATIONAL
-            </span>
-          </div>
-          <div class="mt-3 flex items-center justify-between text-xs text-slate-500 font-mono">
-            <span>Emergency Killswitch</span>
-            <span class="text-slate-400">Standby</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Section 2: Consensus Desk -->
-    <section id="governance" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <!-- LEFT COLUMN: Vault Metrics & Exploit Simulator -->
+    <div class="space-y-6 lg:col-span-1">
       
-      <!-- Initiation Form -->
-      <div class="lg:col-span-6 gemini-glass rounded-3xl p-7 space-y-5">
-        <div class="flex items-center justify-between border-b border-white/[0.08] pb-4">
-          <div class="flex items-center gap-3.5">
-            <div class="w-9 h-9 rounded-xl bg-cyan-950/40 border border-cyan-800/40 flex items-center justify-center text-cyan-300 font-mono font-bold text-sm">01</div>
-            <div>
-              <h3 class="font-bold text-slate-100 text-base">Initiate Treasury Proposal</h3>
-              <p class="text-xs text-slate-400">Dispatches submitTransaction() to smart contract</p>
-            </div>
-          </div>
-          <span class="text-[11px] font-mono bg-white/[0.06] text-slate-300 px-2.5 py-0.5 rounded-full border border-white/10">onlySigner</span>
+      <!-- Treasury Telemetry Card -->
+      <section class="bg-black/80 rounded-xl p-5 crimson-border backdrop-blur-md relative overflow-hidden">
+        <div class="absolute -right-8 -top-8 w-28 h-28 bg-red-700/10 rounded-full blur-2xl"></div>
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-red-950">
+          <span class="text-xs font-bold tracking-widest text-red-400 uppercase flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-4 h-4 text-red-500"></i> Vault Telemetry
+          </span>
+          <span class="text-[10px] bg-red-950 px-2 py-0.5 rounded text-red-300 font-mono">LIVE RESERVE</span>
         </div>
 
         <div class="space-y-4">
           <div>
-            <label class="text-xs font-medium text-slate-300">Recipient Destination Address</label>
-            <div class="relative mt-1.5">
-              <input id="propTarget" type="text" value="0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2" class="w-full bg-[#050814]/90 border border-slate-700/80 rounded-xl px-4 py-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition" />
+            <div class="text-xs text-red-400/60 uppercase">Treasury Solvency</div>
+            <div class="font-display text-4xl font-extrabold text-white tracking-tight flex items-baseline gap-2">
+              <span id="vaultBalance">3.000</span> <span class="text-red-500 text-2xl">ETH</span>
+            </div>
+            <div class="text-xs text-zinc-500 mt-1">USD Parity: <span class="text-zinc-300">$10,482.50 USD</span></div>
+          </div>
+
+          <div class="p-3 bg-red-950/30 rounded-lg border border-red-900/50 space-y-2">
+            <div class="flex justify-between text-xs">
+              <span class="text-zinc-400">Consensus Quorum:</span>
+              <span class="text-red-300 font-bold">2 of 3 Signers</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-zinc-400">Mutex Guard Status:</span>
+              <span id="mutexStatusText" class="text-emerald-400 font-bold">1 (IDLE - READY)</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-zinc-400">Circuit Breaker:</span>
+              <span id="circuitStatusText" class="text-red-400 font-bold">NORMAL (DISENGAGED)</span>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="text-xs font-medium text-slate-300">Transfer Amount</label>
-              <div class="relative mt-1.5">
-                <input id="propAmount" type="number" step="0.1" value="1.0" class="w-full bg-[#050814]/90 border border-slate-700/80 rounded-xl px-4 py-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-400 transition" />
-                <span class="absolute right-3.5 top-3 text-xs font-mono text-slate-400 font-bold">ETH</span>
-              </div>
-            </div>
-            <div>
-              <label class="text-xs font-medium text-slate-300">Payload Data (Hex)</label>
-              <input id="propData" type="text" value="0x" class="w-full mt-1.5 bg-[#050814]/90 border border-slate-700/80 rounded-xl px-4 py-3 text-xs font-mono text-slate-400 focus:outline-none focus:border-cyan-400 transition" />
-            </div>
-          </div>
-
-          <div class="p-4 rounded-2xl bg-indigo-950/20 border border-indigo-500/20 text-xs text-indigo-300 leading-relaxed font-mono">
-            ℹ Proposing logs the transfer to the mempool and applies Proposer Signature (1/2 signers met).
-          </div>
-
-          <button id="btnSubmitTx" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-700 via-indigo-800 to-slate-900 hover:from-indigo-600 hover:to-indigo-700 text-white font-semibold text-sm transition shadow-lg shadow-indigo-950/50 active:scale-[0.99] flex items-center justify-center gap-2 border border-white/10">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Broadcast Proposal to Mempool
+          <!-- Emergency Pause Toggle Button -->
+          <button id="toggleCircuitBtn" onclick="toggleCircuitBreaker()" class="w-full py-2.5 px-4 rounded-lg bg-red-950/80 hover:bg-red-900 text-red-200 border border-red-600/70 font-semibold text-xs tracking-wider uppercase transition flex items-center justify-center gap-2">
+            <i data-lucide="power" class="w-4 h-4 text-red-400"></i> Toggle Emergency Killswitch
           </button>
         </div>
-      </div>
+      </section>
 
-      <!-- Quorum Desk -->
-      <div class="lg:col-span-6 gemini-glass rounded-3xl p-7 space-y-5">
-        <div class="flex items-center justify-between border-b border-white/[0.08] pb-4">
-          <div class="flex items-center gap-3.5">
-            <div class="w-9 h-9 rounded-xl bg-emerald-950/40 border border-emerald-800/40 flex items-center justify-center text-emerald-300 font-mono font-bold text-sm">02</div>
-            <div>
-              <h3 class="font-bold text-slate-100 text-base">Multi-Party Consensus Desk</h3>
-              <p class="text-xs text-slate-400">confirmTransaction() &amp; executeTransaction()</p>
-            </div>
-          </div>
-          <span class="text-[11px] font-mono bg-white/[0.06] text-slate-300 px-2.5 py-0.5 rounded-full border border-white/10">Quorum: 2/3</span>
+      <!-- Exploit Sandbox / Reentrancy Attack Chamber -->
+      <section class="bg-black/90 rounded-xl p-5 crimson-border pulse-danger relative">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-red-950">
+          <span class="text-xs font-bold tracking-widest text-red-500 uppercase flex items-center gap-2">
+            <i data-lucide="skull" class="w-4 h-4 text-red-500"></i> Exploit Simulation Lab
+          </span>
+          <span class="text-[10px] bg-red-950 text-red-400 px-2 py-0.5 rounded border border-red-800">ADVERSARIAL</span>
         </div>
 
-        <div class="space-y-4">
+        <p class="text-xs text-zinc-400 mb-4 leading-relaxed">
+          Simulate a malicious contract (<code class="text-red-400">ReentrancyAttacker.sol</code>) attacking <code class="text-red-400">MultiSigVault</code> via a recursive fallback function loop.
+        </p>
+
+        <div class="space-y-3">
+          <button id="triggerAttackBtn" onclick="runExploitSimulation()" class="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-red-700 to-red-950 hover:from-red-600 hover:to-red-900 text-white font-display font-bold tracking-wider text-sm uppercase shadow-[0_0_20px_rgba(220,38,38,0.5)] transition flex items-center justify-center gap-2">
+            <i data-lucide="zap" class="w-4 h-4 text-red-300"></i> Execute Recursive Drain Exploit
+          </button>
+
+          <!-- Attack Diagnostic Terminal Box -->
+          <div id="attackDiagnostic" class="p-3 bg-black rounded-lg border border-red-950 text-[11px] font-mono text-zinc-400 min-h-[90px] flex flex-col justify-center">
+            <span class="text-zinc-600">// Exploit sandbox standing by...</span>
+            <span class="text-zinc-600">// Click above to trigger recursive attack call.</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Proposals, Governance & Audit Stream (lg:col-span-2) -->
+    <div class="space-y-6 lg:col-span-2">
+
+      <!-- New Proposal Creator Form -->
+      <section class="bg-black/80 rounded-xl p-5 crimson-border backdrop-blur-md">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-red-950">
+          <span class="text-xs font-bold tracking-widest text-red-400 uppercase flex items-center gap-2">
+            <i data-lucide="file-plus" class="w-4 h-4 text-red-500"></i> Dispatch Governance Proposal
+          </span>
+          <span class="text-[10px] text-zinc-500">AUTH: SIGNER 1 (0x80b4...f13a)</span>
+        </div>
+
+        <form id="proposalForm" onsubmit="handleProposalSubmit(event)" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="md:col-span-2">
+            <label class="block text-[11px] text-red-400/80 uppercase mb-1">Target Recipient Address</label>
+            <input type="text" id="propRecipient" required value="0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC" class="w-full bg-zinc-950 border border-red-900/60 rounded px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-red-500" />
+          </div>
           <div>
-            <label class="text-xs font-medium text-slate-300">Target Transaction Index (ID)</label>
-            <input id="actionTxIndex" type="number" value="0" class="w-full mt-1.5 bg-[#050814]/90 border border-slate-700/80 rounded-xl px-4 py-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-cyan-400 transition" />
+            <label class="block text-[11px] text-red-400/80 uppercase mb-1">ETH Amount</label>
+            <input type="number" step="0.1" id="propAmount" required value="0.5" class="w-full bg-zinc-950 border border-red-900/60 rounded px-3 py-2 text-xs text-zinc-200 focus:outline-none focus:border-red-500" />
           </div>
-
-          <div class="grid grid-cols-2 gap-4 pt-1">
-            <button id="btnConfirmTx" class="py-3 px-4 rounded-xl bg-amber-700/80 hover:bg-amber-600 text-white font-semibold text-xs transition shadow-lg shadow-amber-950/40 active:scale-[0.99] flex items-center justify-center gap-2 border border-white/10">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              Confirm as Signer 2
-            </button>
-
-            <button id="btnExecuteTx" class="py-3 px-4 rounded-xl bg-emerald-700/80 hover:bg-emerald-600 text-white font-semibold text-xs transition shadow-lg shadow-emerald-950/40 active:scale-[0.99] flex items-center justify-center gap-2 border border-white/10">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-              Execute Settlement
+          <div class="md:col-span-3 flex justify-end">
+            <button type="submit" class="px-5 py-2 bg-red-900/70 hover:bg-red-800 text-red-100 rounded-lg border border-red-500/80 text-xs font-bold uppercase tracking-wider transition flex items-center gap-2">
+              <i data-lucide="send" class="w-3.5 h-3.5"></i> Submit Transaction
             </button>
           </div>
+        </form>
+      </section>
 
-          <!-- Circuit Breaker -->
-          <div class="pt-2">
-            <div class="p-4 rounded-2xl border border-rose-900/30 bg-rose-950/20 flex items-center justify-between">
-              <div>
-                <h4 class="text-xs font-bold text-rose-300 uppercase tracking-wider">Emergency Killswitch</h4>
-                <p class="text-[11px] text-rose-400/80 mt-0.5">Freezes all contract states if exploit is detected</p>
-              </div>
-              <button id="btnTogglePause" class="px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs transition active:scale-95 shadow-md shadow-rose-950/50">
-                Toggle Freeze
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Section 3: Mempool Ledger -->
-    <section id="mempool" class="gemini-glass rounded-3xl p-7 space-y-4">
-      <div class="flex items-center justify-between border-b border-white/[0.08] pb-4">
-        <div>
-          <h3 class="font-bold text-slate-100 flex items-center gap-2.5">
-            <span>On-Chain Governance Ledger</span>
-            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-          </h3>
-          <p class="text-xs text-slate-400">Live indexed state of transactions stored inside `transactions[]`</p>
-        </div>
-        <span id="txCountBadge" class="text-xs font-mono bg-sky-950/50 text-sky-300 border border-sky-800/40 px-3 py-1 rounded-full">1 Proposal Indexed</span>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs font-mono">
-          <thead>
-            <tr class="text-slate-400 border-b border-white/[0.06] pb-2">
-              <th class="py-3 px-4">TX#</th>
-              <th class="py-3 px-4">Destination</th>
-              <th class="py-3 px-4">Value</th>
-              <th class="py-3 px-4">Quorum Progress</th>
-              <th class="py-3 px-4">Status</th>
-              <th class="py-3 px-4 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody id="txTableBody" class="divide-y divide-white/[0.04] text-slate-300">
-            <tr id="txRow0" class="hover:bg-white/[0.03] transition">
-              <td class="py-3.5 px-4 font-bold text-sky-400">#0</td>
-              <td class="py-3.5 px-4 font-mono text-slate-300">0xAb84...35cb2</td>
-              <td class="py-3.5 px-4 text-emerald-400 font-bold">1.00 ETH</td>
-              <td class="py-3.5 px-4">
-                <div class="flex items-center gap-2">
-                  <div class="w-24 bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                    <div id="quorumBar0" class="bg-amber-400 h-full w-1/2"></div>
-                  </div>
-                  <span id="quorumText0" class="text-[11px] text-amber-400">1 / 2</span>
-                </div>
-              </td>
-              <td class="py-3.5 px-4">
-                <span id="badgeStatus0" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">AWAITING QUORUM</span>
-              </td>
-              <td class="py-3.5 px-4 text-right">
-                <button onclick="quickExecute(0)" class="text-xs text-sky-400 hover:text-sky-300 underline font-semibold">Inspect</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Section 4: Exploit Sandbox -->
-    <section id="simulator" class="gemini-glass rounded-3xl p-7 space-y-6 relative overflow-hidden border border-rose-900/30">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">MODULE 4 EXPLOIT LAB</span>
-            <h3 class="font-bold text-slate-100 text-lg">Adversarial Reentrancy Attack Sandbox</h3>
-          </div>
-          <p class="text-xs text-slate-400 mt-1">Simulating `ReentrancyAttacker.sol` fallback recursion intercepted by Mutex Lock</p>
-        </div>
-        <button id="btnTriggerAttack" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-800 to-rose-900 hover:from-rose-700 hover:to-rose-800 text-white font-bold text-xs tracking-wider uppercase transition shadow-lg shadow-rose-950/50 flex items-center gap-2 active:scale-95 border border-white/10">
-          <svg class="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-          Simulate Recursive Attack
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-        <div id="boxVault" class="p-5 rounded-2xl bg-[#050814]/90 border border-slate-800 space-y-2 transition duration-300">
-          <div class="flex justify-between items-center text-slate-400">
-            <span>[TARGET CONTRACT]</span>
-            <span class="text-emerald-400 font-bold">MultiSigVault</span>
-          </div>
-          <p class="text-[11px] text-slate-400 leading-tight">Enforces Checks-Effects-Interactions and `nonReentrant` status flag.</p>
-          <div id="vaultStateTag" class="text-[10px] text-sky-300 bg-sky-950/40 p-2.5 rounded-xl">State: _status = 1 (UNLOCKED)</div>
+      <!-- Active Mempool Governance Queue -->
+      <section class="bg-black/80 rounded-xl p-5 crimson-border backdrop-blur-md">
+        <div class="flex items-center justify-between pb-3 mb-4 border-b border-red-950">
+          <span class="text-xs font-bold tracking-widest text-red-400 uppercase flex items-center gap-2">
+            <i data-lucide="list-checks" class="w-4 h-4 text-red-500"></i> Mempool Consensus Registry
+          </span>
+          <span id="activeCountBadge" class="text-xs bg-red-950/80 border border-red-800 text-red-300 px-2 py-0.5 rounded">2 PROPOSALS</span>
         </div>
 
-        <div id="boxChannel" class="p-5 rounded-2xl bg-[#050814]/90 border border-slate-800 space-y-2 flex flex-col justify-center items-center text-center transition duration-300">
-          <span class="text-slate-400">[CALL PIPELINE]</span>
-          <div id="arrowDirection" class="text-slate-500 font-bold text-base transition">---- Idle ----</div>
-          <span id="callState" class="text-[10px] text-slate-400">Awaiting execution trigger</span>
+        <!-- Table of Proposals -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="text-red-500/80 border-b border-red-950/80 text-[10px] uppercase">
+                <th class="pb-2">TX#</th>
+                <th class="pb-2">Recipient</th>
+                <th class="pb-2">Amount</th>
+                <th class="pb-2">Consensus</th>
+                <th class="pb-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="mempoolBody" class="divide-y divide-red-950/50">
+              <!-- Dynamically populated via JS -->
+            </tbody>
+          </table>
         </div>
+      </section>
 
-        <div id="boxAttacker" class="p-5 rounded-2xl bg-[#050814]/90 border border-slate-800 space-y-2 transition duration-300">
-          <div class="flex justify-between items-center text-slate-400">
-            <span>[ADVERSARY]</span>
-            <span class="text-rose-400 font-bold">ReentrancyAttacker</span>
-          </div>
-          <p class="text-[11px] text-slate-400 leading-tight">`fallback()` attempts to invoke `executeTransaction(1)` recursively.</p>
-          <div id="attackResultTag" class="text-[10px] text-slate-400 bg-slate-900/80 p-2.5 rounded-xl">Drains Attempted: 0</div>
+      <!-- Live Cryptographic Event Stream -->
+      <section class="bg-black rounded-xl p-5 border border-red-950">
+        <div class="flex items-center justify-between pb-3 mb-3 border-b border-zinc-900">
+          <span class="text-[11px] font-bold tracking-widest text-zinc-400 uppercase flex items-center gap-2">
+            <i data-lucide="terminal" class="w-3.5 h-3.5 text-red-500"></i> Forensic Event Audit Stream
+          </span>
+          <span class="text-[10px] text-zinc-600 font-mono">STATION ID: AG-SEC-01</span>
         </div>
-      </div>
-    </section>
+        <div id="eventAuditLog" class="h-36 overflow-y-auto font-mono text-[11px] space-y-1.5 text-zinc-400 pr-2">
+          <div><span class="text-zinc-600">[SYS_BOOT]</span> AegisGuard smart contract telemetry online.</div>
+          <div><span class="text-zinc-600">[MUTEX]</span> Guard status set to 1 (_NOT_ENTERED). Ready for incoming transactions.</div>
+        </div>
+      </section>
 
-    <!-- Section 5: Cyber Terminal -->
-    <section id="audit-terminal" class="gemini-glass rounded-3xl p-7 space-y-3">
-      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
-        <div class="flex items-center gap-3">
-          <div class="flex gap-1.5">
-            <span class="w-3 h-3 rounded-full bg-rose-500/70"></span>
-            <span class="w-3 h-3 rounded-full bg-amber-500/70"></span>
-            <span class="w-3 h-3 rounded-full bg-emerald-500/70"></span>
-          </div>
-          <span class="text-xs font-mono text-slate-300 font-bold tracking-wider">CRYPTOGRAPHIC EXECUTION &amp; AUDIT STREAM</span>
-        </div>
-        <div class="flex items-center gap-3">
-          <button onclick="clearConsole()" class="text-[11px] font-mono text-slate-400 hover:text-slate-200 transition">Clear Buffer</button>
-          <span class="text-[10px] font-mono text-cyan-400 bg-cyan-950/40 border border-cyan-800/40 px-2.5 py-0.5 rounded-full">STREAM ACTIVE</span>
-        </div>
-      </div>
-
-      <div id="terminalBody" class="h-64 overflow-y-auto bg-[#030612]/95 rounded-2xl p-4 font-mono text-xs space-y-2 border border-slate-800/80 select-text">
-        <div class="text-slate-500">[INITIALIZE] AegisGuard Governance Kernel mounted. EVM Version: Osaka/Cancun.</div>
-        <div class="text-slate-500">[INITIALIZE] Initial Treasury Deposit: 3.00 ETH detected in Vault contract.</div>
-        <div class="text-slate-500">[INITIALIZE] Signer Quorum loaded: [0x5B38...eddC4, 0xAb84...35cb2, 0x4B20...02db].</div>
-        <div class="text-slate-400"><span class="text-indigo-400 font-bold">[CONSENSUS]</span> Required approvals: 2 of 3 signers verified.</div>
-        <div class="text-cyan-400"><span class="text-cyan-300 font-bold">[SECURITY]</span> nonReentrant Mutex Lock armed. Reentrancy protection: ACTIVE.</div>
-      </div>
-    </section>
+    </div>
 
   </main>
 
-  <footer class="border-t border-white/[0.06] py-8 text-center text-xs text-slate-500 font-mono relative z-10">
-    Academic Implementation // Blockchain Security &amp; Smart Contract Governance // BACSE350 Module 3 &amp; 4
+  <footer class="max-w-7xl mx-auto mt-8 pt-4 border-t border-red-950 text-center text-xs text-red-500/50">
+    AEGISGUARD SECURE SMART CONTRACT PROTOCOL // VIT CHENNAI // BACSE350 CAPSTONE
   </footer>
 
-  <!-- ================= REACTIVE SCRIPT ENGINE ================= -->
+  <!-- State & Interactivity Scripts -->
   <script>
-    let vaultBalanceEth = 3.00;
-    const ETH_PRICE_USD = 3280.00;
+    lucide.createIcons();
+
+    let vaultBalance = 3.00;
     let isPaused = false;
-    let nextTxIndex = 1;
-    
-    const txLedger = {
-      0: { target: "0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2", amount: 1.00, confirmations: 1, executed: false }
-    };
+    let mutexStatus = 1; // 1 = NOT_ENTERED, 2 = ENTERED
 
-    const terminal = document.getElementById("terminalBody");
+    let proposals = [
+      {
+        id: 0,
+        to: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+        amount: 1.0,
+        approvals: 2,
+        executed: false,
+        voters: ["0x80b4", "0x3C44"]
+      },
+      {
+        id: 1,
+        to: "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+        amount: 0.25,
+        approvals: 1,
+        executed: false,
+        voters: ["0x80b4"]
+      }
+    ];
 
-    function updateBalanceUI() {
-      document.getElementById("vaultBalance").textContent = vaultBalanceEth.toFixed(2);
-      const fiatVal = (vaultBalanceEth * ETH_PRICE_USD).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      document.getElementById("fiatEquivalent").textContent = `≈ $${fiatVal} USD`;
-    }
-
-    function addLog(badge, message, type = "info") {
-      const line = document.createElement("div");
+    function logEvent(msg, type = "info") {
+      const log = document.getElementById("eventAuditLog");
+      const el = document.createElement("div");
       const time = new Date().toLocaleTimeString();
-      let colorClass = "text-slate-300";
-      let badgeClass = "text-sky-400 font-bold";
+      let colorClass = "text-zinc-400";
+      let tag = "[INFO]";
 
-      if (type === "success") {
-        colorClass = "text-emerald-300";
-        badgeClass = "text-emerald-400 font-bold";
-      } else if (type === "warning") {
-        colorClass = "text-amber-300";
-        badgeClass = "text-amber-400 font-bold";
-      } else if (type === "danger") {
-        colorClass = "text-rose-400 font-bold";
-        badgeClass = "text-rose-500 font-extrabold";
+      if (type === "danger") {
+        colorClass = "text-red-400 font-bold";
+        tag = "[ALERT]";
+      } else if (type === "success") {
+        colorClass = "text-emerald-400";
+        tag = "[EXEC]";
+      } else if (type === "warn") {
+        colorClass = "text-amber-400";
+        tag = "[WARN]";
       }
 
-      line.className = "flex items-start gap-2 " + colorClass;
-      line.innerHTML = `<span class="text-slate-500">[${time}]</span> <span class="${badgeClass}">[${badge}]</span> <span>${message}</span>`;
-      terminal.appendChild(line);
-      terminal.scrollTop = terminal.scrollHeight;
+      el.className = colorClass;
+      el.innerHTML = `<span class="text-zinc-600">[${time}]</span> ${tag} ${msg}`;
+      log.prepend(el);
     }
 
-    function clearConsole() {
-      terminal.innerHTML = '<div class="text-slate-500">[RESET] Buffer cleared. Listening for smart contract events...</div>';
+    function renderTable() {
+      const tbody = document.getElementById("mempoolBody");
+      tbody.innerHTML = "";
+
+      proposals.forEach(p => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-red-950/20";
+        tr.innerHTML = `
+          <td class="py-3 font-mono font-bold text-red-400">#${p.id}</td>
+          <td class="py-3 text-zinc-300 font-mono">${p.to.substring(0, 8)}...${p.to.substring(p.to.length - 4)}</td>
+          <td class="py-3 font-semibold text-white">${p.amount.toFixed(2)} ETH</td>
+          <td class="py-3">
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] ${p.approvals >= 2 ? 'bg-red-900/60 text-red-200 border border-red-600' : 'bg-zinc-900 text-zinc-400 border border-zinc-800'}">
+              ${p.approvals}/2 Signers
+            </span>
+          </td>
+          <td class="py-3 text-right">
+            ${p.executed ? 
+              `<span class="text-zinc-500 font-mono text-[11px] uppercase">Executed</span>` : 
+              `<div class="inline-flex gap-2">
+                ${p.approvals < 2 ? 
+                  `<button onclick="confirmProposal(${p.id})" class="px-2.5 py-1 bg-red-950 hover:bg-red-900 text-red-300 border border-red-700/60 rounded text-[10px] uppercase font-bold">Sign (Signer 2)</button>` : 
+                  `<button onclick="executeProposal(${p.id})" class="px-2.5 py-1 bg-red-600 hover:bg-red-500 text-white rounded text-[10px] uppercase font-bold shadow-[0_0_10px_rgba(220,38,38,0.7)]">Execute</button>`
+                }
+              </div>`
+            }
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("activeCountBadge").innerText = `${proposals.filter(p => !p.executed).length} ACTIVE PROPOSALS`;
+      document.getElementById("vaultBalance").innerText = vaultBalance.toFixed(3);
     }
 
-    // Connect Signer
-    document.getElementById("connectBtn").addEventListener("click", async () => {
-      if (window.ethereum) {
-        try {
-          const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-          const addr = accounts[0];
-          document.getElementById("walletText").textContent = addr.slice(0, 6) + "..." + addr.slice(-4);
-          addLog("WEB3", `Signer authenticated: ${addr} (Provider: Injected Metamask)`, "success");
-        } catch (e) {
-          addLog("REJECTED", e.message, "danger");
-        }
-      } else {
-        document.getElementById("walletText").textContent = "0x5B38...eddC4 (Simulated)";
-        addLog("SIMULATION", "Injected provider not detected. Loaded Keyholder 1: 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", "warning");
-      }
-    });
-
-    // Propose Transaction
-    document.getElementById("btnSubmitTx").addEventListener("click", () => {
+    function handleProposalSubmit(e) {
+      e.preventDefault();
       if (isPaused) {
-        addLog("CIRCUIT_BREAKER", "Proposal blocked: Contract is paused by emergency switch", "danger");
+        alert("CIRCUIT BREAKER ENGAGED: Cannot submit new transactions while system is paused!");
+        logEvent("Transaction rejected: Circuit breaker is ACTIVE", "danger");
         return;
       }
-      
-      const target = document.getElementById("propTarget").value.trim();
+
+      const to = document.getElementById("propRecipient").value;
       const amount = parseFloat(document.getElementById("propAmount").value);
 
-      if (!target.startsWith("0x") || target.length < 10) {
-        addLog("VALIDATION_ERROR", "Invalid recipient Ethereum address", "danger");
-        return;
-      }
+      const newProp = {
+        id: proposals.length,
+        to: to,
+        amount: amount,
+        approvals: 1,
+        executed: false,
+        voters: ["0x80b4"]
+      };
 
-      if (isNaN(amount) || amount <= 0) {
-        addLog("VALIDATION_ERROR", "Transfer amount must be greater than 0 ETH", "danger");
-        return;
-      }
-
-      if (amount > vaultBalanceEth) {
-        addLog("SOLVENCY_WARNING", `Proposed amount (${amount.toFixed(2)} ETH) exceeds reserves (${vaultBalanceEth.toFixed(2)} ETH). Settlement will revert if uncollateralized.`, "warning");
-      }
-
-      const currIdx = nextTxIndex;
-      txLedger[currIdx] = { target: target, amount: amount, confirmations: 1, executed: false };
-
-      const tbody = document.getElementById("txTableBody");
-      const newRow = document.createElement("tr");
-      newRow.className = "hover:bg-white/[0.03] transition";
-      newRow.id = `txRow${currIdx}`;
-      newRow.innerHTML = `
-        <td class="py-3.5 px-4 font-bold text-sky-400">#${currIdx}</td>
-        <td class="py-3.5 px-4 font-mono text-slate-300">${target.slice(0,6)}...${target.slice(-4)}</td>
-        <td class="py-3.5 px-4 text-emerald-400 font-bold">${amount.toFixed(2)} ETH</td>
-        <td class="py-3.5 px-4">
-          <div class="flex items-center gap-2">
-            <div class="w-24 bg-slate-800 rounded-full h-1.5 overflow-hidden">
-              <div id="quorumBar${currIdx}" class="bg-amber-400 h-full w-1/2"></div>
-            </div>
-            <span id="quorumText${currIdx}" class="text-[11px] text-amber-400">1 / 2</span>
-          </div>
-        </td>
-        <td class="py-3.5 px-4">
-          <span id="badgeStatus${currIdx}" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">AWAITING QUORUM</span>
-        </td>
-        <td class="py-3.5 px-4 text-right">
-          <button onclick="quickExecute(${currIdx})" class="text-xs text-sky-400 hover:text-sky-300 underline font-semibold">Inspect</button>
-        </td>
-      `;
-      tbody.appendChild(newRow);
-
-      document.getElementById("txCountBadge").textContent = `${currIdx + 1} Proposals Indexed`;
-      document.getElementById("actionTxIndex").value = currIdx;
-
-      addLog("MEMPOOL", `submitTransaction() recorded: txIndex #${currIdx} | Target: ${target} | Value: ${amount.toFixed(2)} ETH. Proposer auto-confirmed.`, "info");
-      addLog("GAS_METRIC", `Gas Used: 108,420 units | Transaction Hash: 0x8f3c...62b`, "info");
-      nextTxIndex++;
-    });
-
-    // Confirm Transaction
-    document.getElementById("btnConfirmTx").addEventListener("click", () => {
-      const idx = parseInt(document.getElementById("actionTxIndex").value);
-      const tx = txLedger[idx];
-
-      if (!tx) {
-        addLog("GOVERNANCE_ERROR", `Transaction #${idx} does not exist in state mapping.`, "danger");
-        return;
-      }
-
-      if (tx.executed) {
-        addLog("GOVERNANCE_ERROR", `Transaction #${idx} has already been settled and executed.`, "danger");
-        return;
-      }
-
-      if (tx.confirmations >= 2) {
-        addLog("GOVERNANCE_ERROR", `Transaction #${idx} is already confirmed by required signers.`, "warning");
-        return;
-      }
-
-      tx.confirmations = 2;
-      const bar = document.getElementById(`quorumBar${idx}`);
-      const txt = document.getElementById(`quorumText${idx}`);
-      const badge = document.getElementById(`badgeStatus${idx}`);
-
-      if (bar && txt) {
-        bar.style.width = "100%";
-        bar.className = "bg-emerald-400 h-full w-full";
-        txt.textContent = "2 / 2";
-        txt.className = "text-[11px] text-emerald-400 font-bold";
-        badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-        badge.textContent = "QUORUM REACHED";
-
-        addLog("CONSENSUS", `confirmTransaction(${idx}) signed by Signer 2 (0xAb8483...). Quorum threshold satisfied (2 of 3).`, "success");
-        addLog("GAS_METRIC", `Gas Used: 48,190 units`, "info");
-      }
-    });
-
-    // Execute Settlement
-    document.getElementById("btnExecuteTx").addEventListener("click", () => {
-      if (isPaused) {
-        addLog("CIRCUIT_BREAKER", "Execution reverted: Contract is paused by emergency switch", "danger");
-        return;
-      }
-
-      const idx = parseInt(document.getElementById("actionTxIndex").value);
-      const tx = txLedger[idx];
-
-      if (!tx) {
-        addLog("EXECUTION_REVERT", `Transaction #${idx} does not exist.`, "danger");
-        return;
-      }
-
-      if (tx.executed) {
-        addLog("EXECUTION_REVERT", `MultiSigVault: Tx already executed`, "danger");
-        return;
-      }
-
-      if (tx.confirmations < 2) {
-        addLog("EXECUTION_REVERT", `MultiSigVault: Quorum threshold not met (${tx.confirmations}/2 required)`, "danger");
-        return;
-      }
-
-      if (vaultBalanceEth < tx.amount) {
-        addLog("EXECUTION_REVERT", `MultiSigVault: Transaction execution failed (Insufficient Vault balance: ${vaultBalanceEth.toFixed(2)} ETH < ${tx.amount.toFixed(2)} ETH requested)`, "danger");
-        return;
-      }
-
-      tx.executed = true;
-      vaultBalanceEth -= tx.amount;
-      updateBalanceUI();
-
-      const badge = document.getElementById(`badgeStatus${idx}`);
-      if (badge) {
-        badge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20";
-        badge.textContent = "SETTLED & DISPATCHED";
-      }
-
-      confetti({ particleCount: 70, spread: 80, origin: { y: 0.6 } });
-
-      addLog("CEI_PATTERN", `Checks-Effects-Interactions: transaction.executed flag set to TRUE prior to .call{} transfer`, "info");
-      addLog("SETTLEMENT", `executeTransaction(${idx}) SUCCESS! ${tx.amount.toFixed(2)} ETH transferred to ${tx.target}. Remaining: ${vaultBalanceEth.toFixed(2)} ETH`, "success");
-      addLog("GAS_METRIC", `Gas Consumed: 56,380 units`, "info");
-    });
-
-    // Emergency Pause
-    document.getElementById("btnTogglePause").addEventListener("click", () => {
-      isPaused = !isPaused;
-      const badge = document.getElementById("pauseBadge");
-      if (isPaused) {
-        badge.className = "inline-flex items-center gap-1.5 text-xs font-bold font-mono px-2.5 py-1 rounded-lg bg-rose-950/50 text-rose-400 border border-rose-800/40";
-        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping"></span> EMERGENCY PAUSED';
-        addLog("CIRCUIT_BREAKER", "EMERGENCY FREEZE ACTIVATED by Signer. All external calls blocked.", "danger");
-      } else {
-        badge.className = "inline-flex items-center gap-1.5 text-xs font-bold font-mono px-2.5 py-1 rounded-lg bg-emerald-950/40 text-emerald-400 border border-emerald-800/40";
-        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> OPERATIONAL';
-        addLog("CIRCUIT_BREAKER", "Emergency freeze lifted. Normal operations restored.", "success");
-      }
-    });
-
-    // Exploit Simulator
-    document.getElementById("btnTriggerAttack").addEventListener("click", () => {
-      const boxVault = document.getElementById("boxVault");
-      const boxChannel = document.getElementById("boxChannel");
-      const boxAttacker = document.getElementById("boxAttacker");
-      const arrowDirection = document.getElementById("arrowDirection");
-      const callState = document.getElementById("callState");
-      const vaultStateTag = document.getElementById("vaultStateTag");
-      const attackResultTag = document.getElementById("attackResultTag");
-      const mutexStatus = document.getElementById("mutexStatus");
-
-      addLog("EXPLOIT_SIM", "Initiating adversarial recursive fallback attack via ReentrancyAttacker...", "warning");
-
-      arrowDirection.textContent = "===> Transfer ETH ===>";
-      arrowDirection.className = "text-amber-400 font-bold text-base";
-      callState.textContent = "Dispatching 1.0 ETH to attacker contract address";
-      boxVault.className = "p-5 rounded-2xl bg-[#050814]/90 border border-emerald-500/30 space-y-2 transition duration-300";
-      vaultStateTag.textContent = "State: _status = 2 (LOCKED)";
-      mutexStatus.textContent = "LOCKED (2)";
-      mutexStatus.className = "text-2xl font-bold tracking-tight text-rose-400 font-mono";
-
-      setTimeout(() => {
-        arrowDirection.textContent = "<=== RECURSIVE CALL <===";
-        arrowDirection.className = "text-rose-500 font-extrabold text-base animate-pulse";
-        callState.textContent = "Attacker fallback() attempting to invoke executeTransaction(1) again";
-        boxAttacker.className = "p-5 rounded-2xl bg-[#050814]/90 border border-rose-500/40 space-y-2 transition duration-300";
-        attackResultTag.textContent = "Drains Attempted: 1 (RECURSIVE CALL)";
-
-        addLog("ATTACK_VECTOR", "Adversary contract received ETH and immediately triggered executeTransaction(1) recursively inside fallback()", "warning");
-
-        setTimeout(() => {
-          arrowDirection.textContent = "✖ MUTEX INTERCEPTED ✖";
-          arrowDirection.className = "text-rose-400 font-bold text-base";
-          callState.textContent = "Revert triggered by nonReentrant modifier: require(_status != 2)";
-          vaultStateTag.textContent = "State: _status = 1 (UNLOCKED)";
-          mutexStatus.textContent = "UNLOCKED (1)";
-          mutexStatus.className = "text-2xl font-bold tracking-tight text-cyan-300 font-mono";
-
-          addLog("SECURITY_DEFENSE", "REENTRANCY REVERTED: Status is LOCKED (2). Mutex successfully blocked recursive entry!", "danger");
-          addLog("EVM_RECEIPT", `Revert reason: 'MultiSigVault: ReentrancyGuard reentrant call' | Vault balance PRESERVED at ${vaultBalanceEth.toFixed(2)} ETH.`, "success");
-        }, 1200);
-
-      }, 1000);
-    });
-
-    function quickExecute(idx) {
-      document.getElementById("actionTxIndex").value = idx;
-      addLog("UI", `Loaded transaction index #${idx} into Consensus Desk`, "info");
-      document.getElementById("governance").scrollIntoView({ behavior: 'smooth' });
+      proposals.push(newProp);
+      logEvent(`Proposal #${newProp.id} submitted for ${amount} ETH. Confirmation auto-signed by Proposer (1/2).`, "info");
+      renderTable();
     }
 
-    updateBalanceUI();
+    function confirmProposal(id) {
+      const p = proposals.find(item => item.id === id);
+      if (p && p.approvals < 2) {
+        p.approvals = 2;
+        p.voters.push("0x3C44");
+        logEvent(`Signer 2 confirmed proposal #${id}. Quorum threshold satisfied (2/2). Ready for execution.`, "warn");
+        renderTable();
+      }
+    }
+
+    function executeProposal(id) {
+      if (isPaused) {
+        alert("CIRCUIT BREAKER ENGAGED: Executions are locked!");
+        logEvent("Execution abort: Vault is paused.", "danger");
+        return;
+      }
+
+      const p = proposals.find(item => item.id === id);
+      if (p && p.approvals >= 2 && !p.executed) {
+        if (vaultBalance < p.amount) {
+          alert("Insufficient vault reserves!");
+          return;
+        }
+
+        // Simulate Mutex entering
+        mutexStatus = 2;
+        updateMutexUI();
+
+        setTimeout(() => {
+          vaultBalance -= p.amount;
+          p.executed = true;
+          mutexStatus = 1;
+          updateMutexUI();
+          logEvent(`Tx #${id} executed via CEI! Sent ${p.amount} ETH to ${p.to.substring(0,8)}...`, "success");
+          renderTable();
+        }, 600);
+      }
+    }
+
+    function toggleCircuitBreaker() {
+      isPaused = !isPaused;
+      const el = document.getElementById("circuitStatusText");
+      if (isPaused) {
+        el.innerText = "HALTED (ACTIVE PAUSE)";
+        el.className = "text-red-500 font-bold animate-pulse";
+        logEvent("CRITICAL: Circuit breaker triggered by Signer. All transaction pipelines frozen!", "danger");
+      } else {
+        el.innerText = "NORMAL (DISENGAGED)";
+        el.className = "text-zinc-400 font-bold";
+        logEvent("Circuit breaker reset. Transaction pipelines restored.", "info");
+      }
+    }
+
+    function updateMutexUI() {
+      const el = document.getElementById("mutexStatusText");
+      if (mutexStatus === 2) {
+        el.innerText = "2 (LOCKED // NON_REENTRANT)";
+        el.className = "text-red-400 font-bold";
+      } else {
+        el.innerText = "1 (IDLE - READY)";
+        el.className = "text-emerald-400 font-bold";
+      }
+    }
+
+    function runExploitSimulation() {
+      const diag = document.getElementById("attackDiagnostic");
+      const btn = document.getElementById("triggerAttackBtn");
+      btn.disabled = true;
+
+      diag.innerHTML = `
+        <span class="text-amber-400">> [INIT] ReentrancyAttacker.sol deploying exploit payload...</span><br/>
+        <span class="text-zinc-400">> [CALL] Initial external call targeting executeTransaction()...</span>
+      `;
+
+      setTimeout(() => {
+        mutexStatus = 2;
+        updateMutexUI();
+        diag.innerHTML += `<br/><span class="text-red-400 font-bold">> [ATTACK] fallback() intercepted! Triggering recursive re-entry call...</span>`;
+        logEvent("Adversarial alert: Recursive call detected inside transfer execution!", "danger");
+
+        setTimeout(() => {
+          diag.innerHTML += `<br/><span class="text-emerald-400 font-bold">> [MUTEX TRIPPED] Reverted: 'MultiSigVault: ReentrancyGuard reentrant call'</span><br/>
+          <span class="text-white font-bold">> [RESULT] Exploit severed! 0 ETH drained. Treasury 100% solvent.</span>`;
+
+          mutexStatus = 1;
+          updateMutexUI();
+          btn.disabled = false;
+          logEvent("Exploit neutralized: Mutex lock prevented reentrant state corruption.", "success");
+        }, 900);
+      }, 700);
+    }
+
+    // Initial render
+    renderTable();
   </script>
 </body>
 </html>
